@@ -891,6 +891,7 @@ body.dark .saldo-tbl tfoot td{background:var(--bg3);color:var(--tx2)}
   </div>
   <div class="ie-wrap" id="gaji-table-wrap"></div>
   <div id="gaji-info" style="margin-top:10px;font-size:11.5px;color:var(--tx3);display:flex;gap:16px;flex-wrap:wrap"></div>
+  <div id="gaji-summary" style="margin-top:14px"></div>
 </div>
 
 <!-- TREN GAJI -->
@@ -2263,6 +2264,52 @@ function renderGaji(){
     <td colspan="3"></td>
   </tr></tfoot></table>`;
   g('gaji-info').innerHTML=`<span style="font-weight:600">${d.length}</span> dari ${sites.length} data &nbsp;·&nbsp; Total: <span style="font-weight:700;color:var(--blue)">${fmtF(tot)}</span> &nbsp;·&nbsp; <span style="color:var(--tx3)">${Object.keys(gajiPendingChanges).length} perubahan belum di-push</span>`;
+  renderGajiSummary(d);
+}
+
+function renderGajiSummary(d){
+  const el=g('gaji-summary');if(!el)return;
+  const sudahD=d.filter(r=>r.status==='Sudah Direlease');
+  const belumD=d.filter(r=>r.status!=='Sudah Direlease');
+  const sudN=sudahD.reduce((a,r)=>a+(r.nominal||0),0);
+  const belN=belumD.reduce((a,r)=>a+(r.nominal||0),0);
+  const totN=sudN+belN;
+  const pSudah=totN?(sudN/totN*100):0;
+  const pBelum=totN?(belN/totN*100):0;
+  el.innerHTML=`
+  <div class="card nb" style="padding:16px 18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      <div style="font-size:12.5px;font-weight:800;color:var(--tx);display:flex;align-items:center;gap:8px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Ringkasan Status Release
+      </div>
+      <div style="font-size:11px;color:var(--tx3)">${d.length} site pada tampilan ini</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
+      <div style="background:var(--green-l);border:1px solid rgba(13,159,110,.18);border-radius:12px;padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="released-dot"></span>
+          <span style="font-size:11.5px;font-weight:700;color:var(--green)">Sudah Direlease</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:var(--tx);letter-spacing:-.3px">Rp ${fmtF(sudN)}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:2px">${sudahD.length} site &nbsp;·&nbsp; ${pSudah.toFixed(1)}% dari total</div>
+        <div style="height:6px;border-radius:4px;background:var(--bg4);margin-top:10px;overflow:hidden">
+          <div style="height:100%;width:${pSudah}%;background:var(--green);border-radius:4px;transition:width .35s"></div>
+        </div>
+      </div>
+      <div style="background:var(--orange-l);border:1px solid rgba(217,119,6,.18);border-radius:12px;padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="pending-dot"></span>
+          <span style="font-size:11.5px;font-weight:700;color:var(--orange)">Belum Direlease</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:var(--tx);letter-spacing:-.3px">Rp ${fmtF(belN)}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:2px">${belumD.length} site &nbsp;·&nbsp; ${pBelum.toFixed(1)}% dari total</div>
+        <div style="height:6px;border-radius:4px;background:var(--bg4);margin-top:10px;overflow:hidden">
+          <div style="height:100%;width:${pBelum}%;background:var(--orange);border-radius:4px;transition:width .35s"></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 
 function onNomInput(el,sIdx){
